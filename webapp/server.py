@@ -7,7 +7,9 @@ from fibonacci import Fibonacci
 import json
 import logging
 from log4mongo.handlers import MongoHandler
-
+from healthcheck import HealthCheck
+from requests import get
+from pymongo import MongoClient
 
 class OnlyFibFilter(logging.Filter):
 
@@ -34,6 +36,9 @@ class Server(object):
         self._add_routes()
         self._fib = Fibonacci()
         self._init_logging()
+        self._health = HealthCheck(self._app, "/health")
+        self._add_mongo_check()
+        self._add_fib_service_check()
 
     def index(self):
         msg = ('Currently two API endpoints are supported:\n\n'
@@ -83,6 +88,24 @@ class Server(object):
         logger.addHandler(MongoHandler(host='localhost'))
         logger.addFilter(OnlyFibFilter())
         logger.setLevel(logging.INFO)
+    
+    def _mongo_available(self):
+        client = MongoClient()
+        client.server_info()
+        return True, "mongo ok"
+
+    def _fib_available(self):
+        fib_url = 'http://127.0.0.1:8000/fib/3/5'
+        res = get(fib_url)
+        assert res.status_code == 200
+        assert res.json() == [2, 3, 5]
+        return True, "fib service ok"
+
+    def _add_mongo_check(self):
+        self._health.add_check(self._mongo_available)
+    
+    def _add_fib_service_check(self):
+        self._health.add_check(self._fib_available)
 
 if __name__ == '__main__': 
 
