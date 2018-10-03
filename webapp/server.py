@@ -85,12 +85,12 @@ class Server(object):
     
     def _init_logging(self):
         logger = logging.getLogger('werkzeug')
-        logger.addHandler(MongoHandler(host='localhost'))
+        logger.addHandler(MongoHandler(host='mongo'))
         logger.addFilter(OnlyFibFilter())
         logger.setLevel(logging.INFO)
     
     def _mongo_available(self):
-        client = MongoClient()
+        client = MongoClient(host='mongo')
         client.server_info()
         return True, "mongo ok"
 

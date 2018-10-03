@@ -1,0 +1,41 @@
+version: '2'
+services:
+  webapp:
+    build: ./webapp
+    ports:
+      - 8000
+    environment:
+      - DEV = "True"
+    command: sh -c "python server.py"
+    links:
+      - mongo
+    networks: 
+      - front-tier
+      - back-tier
+
+  mongo:
+    image: mongo
+    networks: 
+      - back-tier
+
+  
+    
+  loadbalancer:
+    image: dockercloud/haproxy
+    ports:
+      - 8080:80
+    links:
+      - webapp
+    networks:
+      - front-tier
+      - back-tier
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock 
+
+
+
+networks:
+  front-tier:
+    driver: bridge
+  back-tier:
+    driver: bridge
