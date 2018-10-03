@@ -5,6 +5,23 @@ import config
 import flask
 from fibonacci import Fibonacci
 import json
+import logging
+from log4mongo.handlers import MongoHandler
+
+
+class OnlyFibFilter(logging.Filter):
+
+    def filter(self, record):
+        msg = record.msg
+        path = None
+        try:
+            path = msg.split(" ")[6]
+        except:
+            pass
+        if not path:
+            return False
+        return path.startswith('/fib/')
+
 
 class Server(object):
 	
@@ -16,6 +33,7 @@ class Server(object):
         self._app = flask.Flask(__name__)
         self._add_routes()
         self._fib = Fibonacci()
+        self._init_logging()
 
     def index(self):
         msg = ('Currently two API endpoints are supported:\n\n'
@@ -59,6 +77,12 @@ class Server(object):
 
     def _test_client(self):
         return self._app.test_client()
+    
+    def _init_logging(self):
+        logger = logging.getLogger('werkzeug')
+        logger.addHandler(MongoHandler(host='localhost'))
+        logger.addFilter(OnlyFibFilter())
+        logger.setLevel(logging.INFO)
 
 if __name__ == '__main__': 
 
