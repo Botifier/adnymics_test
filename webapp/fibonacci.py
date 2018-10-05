@@ -18,6 +18,13 @@ class Fibonacci(object):
     def sequence(self, start_idx, end_idx):
         self.__compute(end_idx)
         return self._results[start_idx:end_idx+1]
+    
+    # PEP8: _results should not be accessed externally
+    def reset_cache(self):
+      self._results = [0, 1]
+    
+    def get_cache(self):
+      return self._results
 
 
 if __name__ == '__main__': 
@@ -43,7 +50,7 @@ if __name__ == '__main__':
         fib = Fibonacci()
         fib.sequence(1, 10000)
         # we remove the cached values
-        fib._results = [0, 1]
+        fib.reset_cache()
         fib.sequence(1, 10001)
 
     print("with cache")

@@ -9,7 +9,7 @@ class FibonacciTest(unittest.TestCase):
 
     def setUp(self):
         self._fib = Fibonacci()
-
+    
     def test_limit(self):
         self.assertEqual(self._fib.sequence(0, 0), [0])
         self.assertEqual(self._fib.sequence(1, 1), [1])
@@ -35,6 +35,10 @@ class FibonacciTest(unittest.TestCase):
         self.assertEqual(s[:32], '16052857682729819697035016991663')
         self.assertEqual(s[-32:], '35545120747688390605016278790626')
 
+    def test_reset_cache(self):
+        self._fib.sequence(0, 5)
+        self._fib.reset_cache()
+        self.assertEqual(self._fib.get_cache(), [0, 1])
 
 if __name__ == '__main__':
     unittest.main()
