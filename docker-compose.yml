@@ -5,7 +5,7 @@ services:
     ports:
       - 8000
     environment:
-      - DEV = "True"
+      - DOCKERIZED=True
     command: sh -c "python server.py"
     links:
       - mongo
@@ -23,7 +23,7 @@ services:
   loadbalancer:
     image: dockercloud/haproxy
     ports:
-      - 8080:80
+      - 8000:80
     links:
       - webapp
     networks:
