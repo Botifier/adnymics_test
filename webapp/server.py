@@ -10,6 +10,7 @@ from log4mongo.handlers import MongoHandler
 from healthcheck import HealthCheck
 from requests import get
 from pymongo import MongoClient
+import os
 
 class OnlyFibFilter(logging.Filter):
 
@@ -35,12 +36,21 @@ class Server(object):
         self._app = flask.Flask(__name__)
         self._add_routes()
         self._fib = Fibonacci()
+        self._init_env()
         self._init_logging()
         self._health = HealthCheck(self._app, "/health")
         self._add_mongo_check()
         self._add_fib_service_check()
 
+    def _init_env(self):
+      try:
+        dockerized = os.environ['DOCKERIZED']
+        self._mongo_host = 'mongo'
+      except:
+        self._mongo_host = 'localhost'
+
     def index(self):
+
         msg = ('Currently two API endpoints are supported:\n\n'
                 'GET /fib/<start_idx>/<end_idx>\n'
                 'GET /health\n')
@@ -85,12 +95,12 @@ class Server(object):
     
     def _init_logging(self):
         logger = logging.getLogger('werkzeug')
-        logger.addHandler(MongoHandler(host='mongo'))
+        logger.addHandler(MongoHandler(host=self._mongo_host))
         logger.addFilter(OnlyFibFilter())
         logger.setLevel(logging.INFO)
     
     def _mongo_available(self):
-        client = MongoClient(host='mongo')
+        client = MongoClient(host=self._mongo_host)
         client.server_info()
         return True, "mongo ok"
 
